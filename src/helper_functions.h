@@ -22,7 +22,7 @@ const double M_PI = 3.14159265358979323846;
 /*
  * Struct representing one position/control measurement.
  */
-struct control_s {
+struct Control {
 	
 	double velocity;	// Velocity [m/s]
 	double yawrate;		// Yaw rate [rad/s]
@@ -31,7 +31,7 @@ struct control_s {
 /*
  * Struct representing one ground truth position.
  */
-struct ground_truth {
+struct GroundTruth {
 	
 	double x;		// Global vehicle x position [m]
 	double y;		// Global vehicle y position
@@ -46,6 +46,9 @@ struct LandmarkObs {
 	int id;				// Id of matching landmark in the map.
 	double x;			// Local (vehicle coordinates) x position of landmark observation [m]
 	double y;			// Local (vehicle coordinates) y position of landmark observation [m]
+
+    LandmarkObs() {}
+    LandmarkObs(int id, double x, double y) : id(id), x(x), y(y) {};
 };
 
 /*
@@ -58,15 +61,15 @@ inline double dist(double x1, double y1, double x2, double y2) {
 	return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
 
-inline double * getError(double gt_x, double gt_y, double gt_theta, double pf_x, double pf_y, double pf_theta) {
+inline double * get_error(double gt_x, double gt_y, double gt_theta, double pf_x, double pf_y, double pf_theta) {
+
 	static double error[3];
 	error[0] = fabs(pf_x - gt_x);
 	error[1] = fabs(pf_y - gt_y);
 	error[2] = fabs(pf_theta - gt_theta);
 	error[2] = fmod(error[2], 2.0 * M_PI);
-	if (error[2] > M_PI) {
+	if (error[2] > M_PI)
 		error[2] = 2.0 * M_PI - error[2];
-	}
 	return error;
 }
 
@@ -118,14 +121,13 @@ inline bool read_map_data(std::string filename, Map& map) {
  * @param filename Name of file containing control measurements.
  * @output True if opening and reading file was successful
  */
-inline bool read_control_data(std::string filename, std::vector<control_s>& position_meas) {
+inline bool read_control_data(std::string filename, std::vector<Control>& position_meas) {
 
 	// Get file of position measurements:
 	std::ifstream in_file_pos(filename.c_str(),std::ifstream::in);
 	// Return if we can't open the file.
-	if (!in_file_pos) {
+	if (!in_file_pos)
 		return false;
-	}
 
 	// Declare single line of position measurement file:
 	std::string line_pos;
@@ -139,7 +141,7 @@ inline bool read_control_data(std::string filename, std::vector<control_s>& posi
 		double velocity, yawrate;
 
 		// Declare single control measurement:
-		control_s meas;
+        Control meas;
 
 		//read data from line to values:
 
@@ -161,7 +163,7 @@ inline bool read_control_data(std::string filename, std::vector<control_s>& posi
  * @param filename Name of file containing ground truth.
  * @output True if opening and reading file was successful
  */
-inline bool read_gt_data(std::string filename, std::vector<ground_truth>& gt) {
+inline bool read_gt_data(std::string filename, std::vector<GroundTruth>& gt) {
 
 	// Get file of position measurements:
 	std::ifstream in_file_pos(filename.c_str(),std::ifstream::in);
@@ -182,7 +184,7 @@ inline bool read_gt_data(std::string filename, std::vector<ground_truth>& gt) {
 		double x, y, azimuth;
 
 		// Declare single ground truth:
-		ground_truth single_gt; 
+        GroundTruth single_gt;
 
 		//read data from line to values:
 		iss_pos >> x;
